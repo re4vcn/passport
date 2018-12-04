@@ -111,32 +111,46 @@ class Passport {
      * Validates the specified view and all child views.
      * @param view The view to validate.
      * @param method The [ValidationMethod] to use. Defaults to [ValidationMethod.BATCH].
+     * @param requestFocus true if the first view to validate should request focus in case validation fails
      * @return true if validation passed; otherwise, false.
      */
-    fun validate(view: View, method: ValidationMethod = ValidationMethod.BATCH): Boolean {
+    fun validate(view: View, method: ValidationMethod = ValidationMethod.BATCH, requestFocus: Boolean = true): Boolean {
         fun validateView(target: View) = target.validatorTag()?.validate(target, method) ?: true
-        return allViews(view, method == ValidationMethod.IMMEDIATE) { validateView(it) }
+        val views = viewsNotMatchingPredicate(view, method == ValidationMethod.IMMEDIATE) { validateView(it) }
+        return if(views.isEmpty()){
+            true
+        }else{
+            if(requestFocus) {
+                views.firstOrNull()?.requestFocus()
+            }
+            false
+        }
     }
 
     /**
      * Validates the specified fragment and all child views.
      * @param fragment The fragment to validate.
      * @param method The [ValidationMethod] to use. Defaults to [ValidationMethod.BATCH].
+     * @param requestFocus true if the first view to validate should request focus in case validation fails
      * @return true if validation passed; otherwise, false.
      */
     fun validate(
             fragment: Fragment,
-            method: ValidationMethod = ValidationMethod.BATCH
-    ): Boolean = fragment.view?.let { validate(it, method) } ?: true
+            method: ValidationMethod = ValidationMethod.BATCH,
+            requestFocus: Boolean = true
+    ): Boolean = fragment.view?.let { validate(it, method, requestFocus) } ?: true
 
     /**
      * Validates the specified activity and all child views.
      * @param activity The activity to validate.
      * @param method The [ValidationMethod] to use. Defaults to [ValidationMethod.BATCH].
+     * @param requestFocus true if the first view to validate should request focus in case validation fails
      * @return true if validation passed; otherwise, false.
      */
     fun validate(
             activity: Activity,
-            method: ValidationMethod = ValidationMethod.BATCH
-    ): Boolean = rootView(activity)?.let { validate(it, method) } ?: true
+            method: ValidationMethod = ValidationMethod.BATCH,
+            requestFocus: Boolean = true
+    ): Boolean = rootView(activity)?.let { validate(it, method, requestFocus) } ?: true
+
 }
