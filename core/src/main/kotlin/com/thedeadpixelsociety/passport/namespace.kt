@@ -46,3 +46,27 @@ internal fun allViews(root: View?, immediate: Boolean, predicate: Predicate<View
 
     return res
 }
+
+internal fun viewsNotMatchingPredicate(root: View?, immediate: Boolean, predicate: Predicate<View>): ArrayList<View?> {
+    val views = arrayListOf<View?>()
+    if (root == null) return views
+    if (!predicate(root)){
+        views.add(root)
+        if(immediate) {
+            return views
+        }
+    }
+    if (root is ViewGroup) {
+        for (i in 0 until root.childCount) {
+            val results = viewsNotMatchingPredicate(root.getChildAt(i), immediate, predicate)
+            if (results.isNotEmpty()) {
+                views.addAll(results)
+                if (immediate) {
+                    return views
+                }
+            }
+        }
+    }
+
+    return views
+}
